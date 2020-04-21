@@ -22,9 +22,11 @@ export const useSphere = (fn, fwdRef) => useBody("Sphere", fn, fwdRef);
 export const usePlane = (fn, fwdRef) => useBody("Plane", fn, fwdRef);
 
 export const useBody = (type, bodyFn, meshRef) => {
-  const { world, createBody, computeMatrix } = inject(PhysicsContextSymbol);
-  const uuid = computed(() => (meshRef.value ? meshRef.value.uuid : null));
+  const { world, createBody, computeMatrix, isWorker } = inject(
+    PhysicsContextSymbol
+  );
 
+  const uuid = computed(() => (meshRef.value ? meshRef.value.uuid : null));
   const bodies = shallowRef(null);
   watch(uuid, async () => {
     if (meshRef.value instanceof THREE.InstancedMesh) {
@@ -47,14 +49,14 @@ export const useBody = (type, bodyFn, meshRef) => {
   });
 
   const getBodyMatrix = async (i) =>
-    bodies.value[i].id !== undefined
-      ? await computeMatrix(bodies.value[i])
-      : await world.getBodyById(bodies.value[i], true);
+    isWorker
+      ? await world.getBodyById(bodies.value[i], true)
+      : computeMatrix(bodies.value[i]);
 
   const getBody = async (i) =>
-    bodies.value[i].id !== undefined
-      ? bodies.value[i]
-      : await world.getBodyById(bodies.value[i], false);
+    isWorker
+      ? await world.getBodyById(bodies.value[i], false)
+      : bodies.value[i];
 
   const temp = new THREE.Matrix4();
   useFrame(async () => {
