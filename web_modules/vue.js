@@ -297,11 +297,11 @@ function track(target, type, key) {
         return;
     }
     let depsMap = targetMap.get(target);
-    if (depsMap === void 0) {
+    if (!depsMap) {
         targetMap.set(target, (depsMap = new Map()));
     }
     let dep = depsMap.get(key);
-    if (dep === void 0) {
+    if (!dep) {
         depsMap.set(key, (dep = new Set()));
     }
     if (!dep.has(activeEffect)) {
@@ -319,14 +319,14 @@ function track(target, type, key) {
 }
 function trigger(target, type, key, newValue, oldValue, oldTarget) {
     const depsMap = targetMap.get(target);
-    if (depsMap === void 0) {
+    if (!depsMap) {
         // never been tracked
         return;
     }
     const effects = new Set();
     const computedRunners = new Set();
     const add = (effectsToAdd) => {
-        if (effectsToAdd !== void 0) {
+        if (effectsToAdd) {
             effectsToAdd.forEach(effect => {
                 if (effect !== activeEffect || !shouldTrack) {
                     if (effect.options.computed) {
@@ -379,7 +379,7 @@ function trigger(target, type, key, newValue, oldValue, oldTarget) {
                 oldTarget
             });
         }
-        if (effect.options.scheduler !== void 0) {
+        if (effect.options.scheduler) {
             effect.options.scheduler(effect);
         }
         else {
@@ -1013,12 +1013,12 @@ function formatTrace(trace) {
 }
 function formatTraceEntry({ vnode, recurseCount }) {
     const postfix = recurseCount > 0 ? `... (${recurseCount} recursive calls)` : ``;
-    const open = ` at <${formatComponentName(vnode)}`;
+    const isRoot = vnode.component.parent == null;
+    const open = ` at <${formatComponentName(vnode.type, isRoot)}`;
     const close = `>` + postfix;
-    const rootLabel = vnode.component.parent == null ? `(Root)` : ``;
     return vnode.props
-        ? [open, ...formatProps(vnode.props), close, rootLabel]
-        : [open + close, rootLabel];
+        ? [open, ...formatProps(vnode.props), close]
+        : [open + close];
 }
 function formatProps(props) {
     const res = [];
@@ -1289,12 +1289,21 @@ function renderComponentRoot(instance) {
         else {
             // functional
             const render = Component;
+            // in dev, mark attrs accessed if optional props (attrs === props)
+            if (("development" !== 'production') && attrs === props) {
+                markAttrsAccessed();
+            }
             result = normalizeVNode(render.length > 1
-                ? render(props, {
-                    attrs,
-                    slots,
-                    emit
-                })
+                ? render(props, ("development" !== 'production')
+                    ? {
+                        get attrs() {
+                            markAttrsAccessed();
+                            return attrs;
+                        },
+                        slots,
+                        emit
+                    }
+                    : { attrs, slots, emit })
                 : render(props, null /* we know it doesn't need it */));
             fallthroughAttrs = Component.props ? attrs : getFallthroughAttrs(attrs);
         }
@@ -1320,10 +1329,33 @@ function renderComponentRoot(instance) {
                 }
             }
             else if (("development" !== 'production') && !accessedAttrs && root.type !== Comment) {
-                warn(`Extraneous non-props attributes (` +
-                    `${Object.keys(attrs).join(', ')}) ` +
-                    `were passed to component but could not be automatically inherited ` +
-                    `because component renders fragment or text root nodes.`);
+                const allAttrs = Object.keys(attrs);
+                const eventAttrs = [];
+                const extraAttrs = [];
+                for (let i = 0, l = allAttrs.length; i < l; i++) {
+                    const key = allAttrs[i];
+                    if (isOn(key)) {
+                        // remove `on`, lowercase first letter to reflect event casing accurately
+                        eventAttrs.push(key[2].toLowerCase() + key.slice(3));
+                    }
+                    else {
+                        extraAttrs.push(key);
+                    }
+                }
+                if (extraAttrs.length) {
+                    warn(`Extraneous non-props attributes (` +
+                        `${extraAttrs.join(', ')}) ` +
+                        `were passed to component but could not be automatically inherited ` +
+                        `because component renders fragment or text root nodes.`);
+                }
+                if (eventAttrs.length) {
+                    warn(`Extraneous non-emits event listeners (` +
+                        `${eventAttrs.join(', ')}) ` +
+                        `were passed to component but could not be automatically inherited ` +
+                        `because component renders fragment or text root nodes. ` +
+                        `If the listener is intended to be a component custom event listener only, ` +
+                        `declare it using the "emits" option.`);
+                }
             }
         }
         // inherit scopeId
@@ -1407,7 +1439,6 @@ function shouldUpdateComponent(prevVNode, nextVNode, parentComponent, optimized)
     // caused the child component's slots content to have changed, we need to
     // force the child to update as well.
     if (
-        
         (prevChildren || nextChildren) &&
         parentComponent &&
         parentComponent.renderUpdated) {
@@ -2027,7 +2058,6 @@ function isVNode(value) {
 }
 function isSameVNodeType(n1, n2) {
     if (
-        
         n2.shapeFlag & 6 /* COMPONENT */ &&
         n2.type.__hmrUpdated) {
         // HMR only: if the component has been hot-updated, force a reload.
@@ -2311,7 +2341,7 @@ function emit(instance, event, ...args) {
     let handler = props[`on${capitalize(event)}`];
     // for v-model update:xxx events, also trigger kebab-case equivalent
     // for props passed via kebab-case
-    if (!handler && event.indexOf('update:') === 0) {
+    if (!handler && event.startsWith('update:')) {
         event = hyphenate(event);
         handler = props[`on${capitalize(event)}`];
     }
@@ -2372,7 +2402,7 @@ isSSR = false) {
     }
     instance.attrs = attrs;
 }
-function updateProps(instance, rawProps, optimized) {
+function updateProps(instance, rawProps, rawPrevProps, optimized) {
     const { props, attrs, vnode: { patchFlag } } = instance;
     const rawOptions = instance.type.props;
     const rawCurrentProps = toRaw(props);
@@ -2416,16 +2446,22 @@ function updateProps(instance, rawProps, optimized) {
                     // and converted to camelCase (#955)
                     ((kebabKey = hyphenate(key)) === key || !hasOwn(rawProps, kebabKey)))) {
                 if (options) {
-                    props[key] = resolvePropValue(options, rawProps || EMPTY_OBJ, key, undefined);
+                    if (rawPrevProps && rawPrevProps[kebabKey] !== undefined) {
+                        props[key] = resolvePropValue(options, rawProps || EMPTY_OBJ, key, undefined);
+                    }
                 }
                 else {
                     delete props[key];
                 }
             }
         }
-        for (const key in attrs) {
-            if (!rawProps || !hasOwn(rawProps, key)) {
-                delete attrs[key];
+        // in the case of functional component w/o props declaration, props and
+        // attrs point to the same object so it should already have been updated.
+        if (attrs !== rawCurrentProps) {
+            for (const key in attrs) {
+                if (!rawProps || !hasOwn(rawProps, key)) {
+                    delete attrs[key];
+                }
             }
         }
     }
@@ -2458,9 +2494,10 @@ function setFullProps(instance, rawProps, props, attrs) {
         }
     }
     if (needCastKeys) {
+        const rawCurrentProps = toRaw(props);
         for (let i = 0; i < needCastKeys.length; i++) {
             const key = needCastKeys[i];
-            props[key] = resolvePropValue(options, props, key, props[key]);
+            props[key] = resolvePropValue(options, rawCurrentProps, key, rawCurrentProps[key]);
         }
     }
 }
@@ -3001,7 +3038,13 @@ function createAppAPI(render, hydrate) {
 }
 const map = new Map();
 function registerHMR(instance) {
-    map.get(instance.type.__hmrId).instances.add(instance);
+    const id = instance.type.__hmrId;
+    let record = map.get(id);
+    if (!record) {
+        createRecord(id, instance.type);
+        record = map.get(id);
+    }
+    record.instances.add(instance);
 }
 function unregisterHMR(instance) {
     map.get(instance.type.__hmrId).instances.delete(instance);
@@ -3017,9 +3060,12 @@ function createRecord(id, comp) {
     return true;
 }
 function rerender(id, newRender) {
+    const record = map.get(id);
+    if (!record)
+        return;
     // Array.from creates a snapshot which avoids the set being mutated during
     // updates
-    Array.from(map.get(id).instances).forEach(instance => {
+    Array.from(record.instances).forEach(instance => {
         if (newRender) {
             instance.render = newRender;
         }
@@ -3032,6 +3078,8 @@ function rerender(id, newRender) {
 }
 function reload(id, newComp) {
     const record = map.get(id);
+    if (!record)
+        return;
     // 1. Update existing comp definition to match new one
     const comp = record.comp;
     Object.assign(comp, newComp);
@@ -3951,9 +3999,10 @@ function baseCreateRenderer(options, createHydrationFns) {
     };
     const updateComponentPreRender = (instance, nextVNode, optimized) => {
         nextVNode.component = instance;
+        const prevProps = instance.vnode.props;
         instance.vnode = nextVNode;
         instance.next = null;
-        updateProps(instance, nextVNode.props, optimized);
+        updateProps(instance, nextVNode.props, prevProps, optimized);
         updateSlots(instance, nextVNode.children);
     };
     const patchChildren = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, optimized = false) => {
@@ -5175,9 +5224,6 @@ function traverse(value, seen = new Set()) {
     if (!isObject(value) || seen.has(value)) {
         return value;
     }
-    if (seen.has(value)) {
-        return;
-    }
     seen.add(value);
     if (isArray(value)) {
         for (let i = 0; i < value.length; i++) {
@@ -5950,9 +5996,10 @@ function finishComponentSetup(instance, isSSR) {
         if ( !Component.render) {
             /* istanbul ignore if */
             if (!compile && Component.template) {
-                warn(`Component provides template but the build of Vue you are running ` +
-                    `does not support runtime template compilation. Either use the ` +
-                    `full build or pre-compile the template using Vue CLI.`);
+                warn(`Component provided template option but ` +
+                    `runtime compilation is not supported in this build of Vue.` +
+                    ( ` Configure your bundler to alias "vue" to "vue/dist/vue.esm-bundler.js".`
+                        ) /* should not happen */);
             }
             else {
                 warn(`Component is missing template or render function.`);
@@ -5975,7 +6022,9 @@ function finishComponentSetup(instance, isSSR) {
 }
 const attrHandlers = {
     get: (target, key) => {
-        markAttrsAccessed();
+        {
+            markAttrsAccessed();
+        }
         return target[key];
     },
     set: () => {
@@ -6013,17 +6062,17 @@ function recordInstanceBoundEffect(effect) {
 }
 const classifyRE = /(?:^|[-_])(\w)/g;
 const classify = (str) => str.replace(classifyRE, c => c.toUpperCase()).replace(/[-_]/g, '');
-function formatComponentName(Component, file) {
+function formatComponentName(Component, isRoot = false) {
     let name = isFunction(Component)
         ? Component.displayName || Component.name
         : Component.name;
-    if (!name && file) {
-        const match = file.match(/([^/\\]+)\.vue$/);
+    if (!name && Component.__file) {
+        const match = Component.__file.match(/([^/\\]+)\.vue$/);
         if (match) {
             name = match[1];
         }
     }
-    return name ? classify(name) : 'Anonymous';
+    return name ? classify(name) : isRoot ? `App` : `Anonymous`;
 }
 
 function computed$1(getterOrOptions) {
@@ -6254,8 +6303,16 @@ function resolveAsset(type, name, warnMissing = true) {
                 res = self;
             }
         }
-        if ( warnMissing && !res) {
-            warn(`Failed to resolve ${type.slice(0, -1)}: ${name}`);
+        {
+            if (res) {
+                // in dev, infer anonymous component's name based on registered name
+                if (type === COMPONENTS && !res.name) {
+                    res.name = name;
+                }
+            }
+            else if (warnMissing) {
+                warn(`Failed to resolve ${type.slice(0, -1)}: ${name}`);
+            }
         }
         return res;
     }
@@ -6345,7 +6402,7 @@ function createSlots(slots, dynamicSlots) {
 }
 
 // Public API ------------------------------------------------------------------
-const version = "3.0.0-beta.2";
+const version = "3.0.0-beta.3";
 const ssrUtils = ( null);
 
 const svgNS = 'http://www.w3.org/2000/svg';
@@ -6487,7 +6544,7 @@ function autoPrefix(style, rawName) {
 
 const xlinkNS = 'http://www.w3.org/1999/xlink';
 function patchAttr(el, key, value, isSVG) {
-    if (isSVG && key.indexOf('xlink:') === 0) {
+    if (isSVG && key.startsWith('xlink:')) {
         if (value == null) {
             el.removeAttributeNS(xlinkNS, key.slice(6, key.length));
         }
@@ -6649,7 +6706,7 @@ const patchProp = (el, key, prevValue, nextValue, isSVG = false, prevChildren, p
         default:
             if (isOn(key)) {
                 // ignore v-model listeners
-                if (key.indexOf('onUpdate:') < 0) {
+                if (!key.startsWith('onUpdate:')) {
                     patchEvent(el, key, prevValue, nextValue, parentComponent);
                 }
             }
@@ -7234,14 +7291,14 @@ const MAP_KEY_ITERATE_KEY$1 = Symbol( 'Map key iterate' );
 let shouldTrack$2 = true;
 function trigger$1$1(target, type, key, newValue, oldValue, oldTarget) {
     const depsMap = targetMap$1.get(target);
-    if (depsMap === void 0) {
+    if (!depsMap) {
         // never been tracked
         return;
     }
     const effects = new Set();
     const computedRunners = new Set();
     const add = (effectsToAdd) => {
-        if (effectsToAdd !== void 0) {
+        if (effectsToAdd) {
             effectsToAdd.forEach(effect => {
                 if (effect !== activeEffect$1 || !shouldTrack$2) {
                     if (effect.options.computed) {
@@ -7294,7 +7351,7 @@ function trigger$1$1(target, type, key, newValue, oldValue, oldTarget) {
                 oldTarget
             });
         }
-        if (effect.options.scheduler !== void 0) {
+        if (effect.options.scheduler) {
             effect.options.scheduler(effect);
         }
         else {
@@ -7908,4 +7965,13 @@ function normalizeContainer(container) {
         `Make sure to use the production build (*.prod.js) when deploying for production.`);
 }
 
-export { BaseTransition, Comment, Fragment, KeepAlive, Suspense, Teleport, Text, Transition, TransitionGroup, callWithAsyncErrorHandling, callWithErrorHandling, camelize, cloneVNode, computed$1 as computed, createApp, createBlock, createCommentVNode, createHydrationRenderer, createRenderer, createSSRApp, createSlots, createStaticVNode, createTextVNode, createVNode, customRef, defineAsyncComponent, defineComponent, getCurrentInstance, h, handleError, hydrate, inject, isProxy, isReactive, isReadonly, isRef, markRaw, mergeProps, nextTick, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onMounted, onRenderTracked, onRenderTriggered, onUnmounted, onUpdated, openBlock, popScopeId, provide, pushScopeId, reactive, readonly, ref, registerRuntimeCompiler, render, renderList, renderSlot, resolveComponent, resolveDirective, resolveDynamicComponent, resolveTransitionHooks, setBlockTracking, setTransitionHooks, shallowReactive, shallowReadonly, shallowRef, ssrContextKey, ssrUtils, toDisplayString, toHandlers, toRaw, toRef, toRefs, transformVNodeArgs, unref, useCSSModule, useSSRContext, useTransitionState, vModelCheckbox, vModelDynamic, vModelRadio, vModelSelect, vModelText, vShow, version, warn, watch, watchEffect, withCtx, withDirectives, withKeys, withModifiers, withScopeId };
+// This entry exports the runtime only, and is built as
+const compile$1 = () => {
+    {
+        warn(`Runtime compilation is not supported in this build of Vue.` +
+            ( ` Configure your bundler to alias "vue" to "vue/dist/vue.esm-bundler.js".`
+                ) /* should not happen */);
+    }
+};
+
+export { BaseTransition, Comment, Fragment, KeepAlive, Suspense, Teleport, Text, Transition, TransitionGroup, callWithAsyncErrorHandling, callWithErrorHandling, camelize, cloneVNode, compile$1 as compile, computed$1 as computed, createApp, createBlock, createCommentVNode, createHydrationRenderer, createRenderer, createSSRApp, createSlots, createStaticVNode, createTextVNode, createVNode, customRef, defineAsyncComponent, defineComponent, getCurrentInstance, h, handleError, hydrate, inject, isProxy, isReactive, isReadonly, isRef, markRaw, mergeProps, nextTick, onActivated, onBeforeMount, onBeforeUnmount, onBeforeUpdate, onDeactivated, onErrorCaptured, onMounted, onRenderTracked, onRenderTriggered, onUnmounted, onUpdated, openBlock, popScopeId, provide, pushScopeId, reactive, readonly, ref, registerRuntimeCompiler, render, renderList, renderSlot, resolveComponent, resolveDirective, resolveDynamicComponent, resolveTransitionHooks, setBlockTracking, setTransitionHooks, shallowReactive, shallowReadonly, shallowRef, ssrContextKey, ssrUtils, toDisplayString, toHandlers, toRaw, toRef, toRefs, transformVNodeArgs, unref, useCSSModule, useSSRContext, useTransitionState, vModelCheckbox, vModelDynamic, vModelRadio, vModelSelect, vModelText, vShow, version, warn, watch, watchEffect, withCtx, withDirectives, withKeys, withModifiers, withScopeId };

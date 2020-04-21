@@ -22,6 +22,9 @@ export const createBody = (
     position: new CANNON.Vec3().set(...(options.position ?? position)),
   });
 
+  body.sleepSpeedLimit = options.sleepSpeedLimit ?? 0.5;
+  body.sleepTimeLimit = options.sleepSpeedLimit ?? 1;
+  
   body.addShape(
     box,
     new CANNON.Vec3(center[0], center[1] * scale[1], center[2])

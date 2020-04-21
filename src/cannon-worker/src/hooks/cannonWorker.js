@@ -40,6 +40,9 @@ export const world = {
     set contactEquationRelaxation(value) {
       _world.defaultContactMaterial.contactEquationRelaxation = value;
     },
+    set contactEquationRegularizationTime(value) {
+      _world.defaultContactMaterial.contactEquationRegularizationTime = value;
+    }
   },
   solver: {
     set tolerance(value) {
