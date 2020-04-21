@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "game/components/": "./components/",
+    "game/assets/": "../assets/",
+    "game/hooks/": "./hooks/",
+    "game/utils/": "./utils/"
+  }
+}

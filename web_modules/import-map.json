@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "cannon-es": "./cannon-es.js",
+    "construct-style-sheets-polyfill": "./construct-style-sheets-polyfill.js",
+    "es-module-shims": "./es-module-shims.js",
+    "import-from-worker": "./import-from-worker.js",
+    "nice-color-palettes": "./nice-color-palettes.js",
+    "nurbs": "./nurbs.js",
+    "three": "./three.js",
+    "vue": "./vue.js"
+  }
+}

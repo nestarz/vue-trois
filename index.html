@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script defer src="./web_modules/es-module-shims.js"></script>
+    <script
+      defer
+      src="./web_modules/construct-style-sheets-polyfill.js"
+    ></script>
+    <script type="importmap-shim" src="./web_modules/import-map.json"></script>
+    <script type="importmap-shim" src="./src/game/src/import-map.json"></script>
+    <script
+      type="importmap-shim"
+      src="./src/cannon-worker/src/import-map.json"
+    ></script>
+    <script
+      type="importmap-shim"
+      src="./src/vue-cannon/src/import-map.json"
+    ></script>
+    <script
+      type="importmap-shim"
+      src="./src/vue-three-fiber/src/import-map.json"
+    ></script>
+    <script type="module-shim" src="./src/game/src/index.js"></script>
+  </body>
+</html>

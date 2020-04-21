@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "vue-three-fiber/components/": "./components/",
+    "vue-three-fiber/assets/": "../assets/",
+    "vue-three-fiber/hooks/": "./hooks/",
+    "vue-three-fiber/utils/": "./utils/"
+  }
+}

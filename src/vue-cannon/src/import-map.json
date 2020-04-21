@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "vue-cannon/components/": "./components/",
+    "vue-cannon/assets/": "../assets/",
+    "vue-cannon/hooks/": "./hooks/",
+    "vue-cannon/utils/": "./utils/"
+  }
+}

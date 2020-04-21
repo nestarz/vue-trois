@@ -1,0 +1,18 @@
+@font-face {
+  font-family: "InriaSerif";
+  src: url("https://chez.eliasrhouzlane.com/git/librairie-typographique/assets/fonts/InriaSerif/InriaSerif-Regular.woff2")
+    format("woff2");
+}
+
+* {
+  box-sizing: content-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: InriaSerif;
+}

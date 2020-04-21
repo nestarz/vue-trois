@@ -1,0 +1,34 @@
+{
+  "name": "es6-boilerplate",
+  "version": "0.0.1",
+  "description": "ES6 template with import-map support",
+  "main": "index.js",
+  "author": "Elias Rhouzlane",
+  "license": "MIT",
+  "dependencies": {
+    "cannon-es": "^0.9.0",
+    "construct-style-sheets-polyfill": "^2.3.5",
+    "es-module-shims": "^0.4.6",
+    "import-from-worker": "^1.0.1",
+    "nice-color-palettes": "^3.0.0",
+    "nurbs": "^1.1.1",
+    "three": "^0.115.0",
+    "threejs-meshline": "^2.0.10",
+    "vue": "3.0.0-beta.2"
+  },
+  "devDependencies": {
+    "snowpack": "^1.6.0"
+  },
+  "snowpack": {
+    "webDependencies": [
+      "es-module-shims",
+      "construct-style-sheets-polyfill",
+      "import-from-worker",
+      "three",
+      "nurbs",
+      "cannon-es",
+      "vue",
+      "nice-color-palettes"
+    ]
+  }
+}

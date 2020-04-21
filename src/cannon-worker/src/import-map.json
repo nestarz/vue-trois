@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "cannon-worker/components/": "./components/",
+    "cannon-worker/assets/": "../assets/",
+    "cannon-worker/hooks/": "./hooks/",
+    "cannon-worker/utils/": "./utils/"
+  }
+}
