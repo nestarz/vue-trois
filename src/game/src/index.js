@@ -12,7 +12,7 @@ import Plane from "game/components/Plane.js";
 
 const App = {
   setup() {
-    const renderContextRef = ref(null);
+    const renderContextRef = ref({});
     watch(renderContextRef, () => {
       const { camera } = renderContextRef.value;
 
@@ -20,10 +20,18 @@ const App = {
       camera.lookAt(0, 0, 0);
     });
 
-    const physicsContextRef = ref(null);
+    const physicsContextRef = ref({});
     watch([renderContextRef, physicsContextRef], () => {
       const { scene } = renderContextRef.value;
       const { world, frameCallbacks, isWorker } = physicsContextRef.value;
+
+      if (world) {
+        world.solver.tolerance = 0.001;
+        world.solver.iterations = 5;
+        world.broadphase.axisIndex = 0;
+        world.defaultContactMaterial.contactEquationStiffness = 1e6;
+        world.defaultContactMaterial.contactEquationRelaxation = 5;
+      }
 
       if (world && !isWorker) {
         const cannonDebugger = new CannonDebugger(scene, world);

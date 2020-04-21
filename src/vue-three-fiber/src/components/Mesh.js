@@ -3,7 +3,6 @@ import {
   h,
   inject,
   shallowRef,
-  unref,
   onUnmounted,
   onMounted,
   watchEffect,
@@ -57,18 +56,20 @@ export default {
     };
 
     watchEffect(() => {
-      if (mesh.value) remove();
+      if (mesh.value) {
+        remove();
+      }
+
       mesh.value = props.count
         ? new THREE.InstancedMesh(geometry.value, material.value, props.count)
         : new THREE.Mesh(geometry.value, material.value);
-      scene.add(unref(mesh));
+      scene.add(mesh.value);
     });
     watchEffect(() => (props.meshRef.value = mesh.value));
     watchEffect(() => (mesh.value.visible = props.visible));
     watchEffect(() => mesh.value.position.copy(position.value));
     watchEffect(() => mesh.value.rotation.copy(rotation.value));
     watchEffect(() => mesh.value.scale.copy(scale.value));
-    onMounted(() => emit("mounted", mesh));
     onUnmounted(() => remove());
 
     let over = false;

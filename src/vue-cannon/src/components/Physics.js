@@ -1,8 +1,11 @@
 import * as CANNON from "cannon-es";
 import { h, onMounted, provide, watchEffect, shallowReactive } from "vue";
 
-import cannonWorker from "cannon-worker/hooks/useCannonWorker.js";
+import cannonWorker, {
+  checkSupport,
+} from "cannon-worker/hooks/useCannonWorker.js";
 import { createBody } from "vue-cannon/utils/computeBodyFromMesh.js";
+import { computeMatrix } from "vue-cannon/utils/computeMatrix.js";
 
 export const PhysicsContextSymbol = Symbol("PhysicsContextSymbol");
 
@@ -23,28 +26,33 @@ export default {
   setup(props, { slots }) {
     const context = shallowReactive({
       world: null,
-      isWorker: false,
+      isWorker: null,
       frameCallbacks: new Set(),
+      createBody,
+      computeMatrix,
     });
     provide(PhysicsContextSymbol, context);
 
-    if (props.useWorker) {
+    const workerSupport = checkSupport();
+    if (props.useWorker && workerSupport) {
       cannonWorker().then((worker) => {
-        worker.setup({
-          allowSleep: props.worldOptions.allowSleep,
-          gravity: props.worldOptions.gravity,
-        });
+        worker.setup(props.worldOptions);
         context.world = worker.world;
         context.createBody = worker.createBody;
+        context.computeMatrix = worker.computeMatrix;
         context.isWorker = true;
       });
     } else {
+      if (props.useWorker && !workerSupport) {
+        console.warn("Worker Module not supported.");
+      }
+
       context.world = new CANNON.World(props.worldOptions);
-      context.createBody = createBody;
+      context.isWorker = false;
     }
 
     watchEffect(() => {
-      if (props.contextRef) props.contextRef.value = context;
+      if (props.contextRef && context.world) props.contextRef.value = context;
     });
 
     onMounted(function animate() {

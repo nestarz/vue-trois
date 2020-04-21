@@ -1,9 +1,12 @@
-import * as THREE from "/web_modules/three.js";
 import * as CANNON from "/web_modules/cannon-es.js";
+
 import { createBody as _createBody } from "/src/vue-cannon/src/utils/computeBodyFromMesh.js";
+import { computeMatrix } from "/src/vue-cannon/src/utils/computeMatrix.js";
 
 const bodies = {};
 let _world = null;
+
+export { computeMatrix };
 
 export function createBody(...args) {
   const body = _createBody(...args);
@@ -13,27 +16,37 @@ export function createBody(...args) {
 
 export function setup(worldOptions) {
   _world = new CANNON.World({
-    gravity: new CANNON.Vec3(0, -10, 0),
-    broadphase: new CANNON.SAPBroadphase(),
-    allowSleep: true,
-    // ...worldOptions,
+    gravity: worldOptions.gravity ?? new CANNON.Vec3(0, -10, 0),
+    broadphase:
+      worldOptions.broadphase === "NaiveBroadphase"
+        ? new CANNON.NaiveBroadphase()
+        : new CANNON.SAPBroadphase(),
+    allowSleep: worldOptions.allowSleep ?? true,
   });
-
-  _world.broadphase.axisIndex = 0;
-  _world.defaultContactMaterial.contactEquationStiffness = 1e6;
-  _world.defaultContactMaterial.contactEquationRelaxation = 5;
-  _world.solver.tolerance = 0.001;
-  _world.solver.iterations = 5;
 }
 
-const temp = new THREE.Object3D();
-const computeMatrix = ({ position, quaternion }) => {
-  temp.position.copy(position);
-  temp.quaternion.copy(quaternion);
-  temp.updateMatrix();
-  return temp.matrix.toArray();
-};
 export const world = {
+  broadphase: {
+    set axisIndex(value) {
+      _world.broadphase.axisIndex = value;
+    },
+  },
+  defaultContactMaterial: {
+    set contactEquationStiffness(value) {
+      _world.defaultContactMaterial.contactEquationStiffness = value;
+    },
+    set contactEquationRelaxation(value) {
+      _world.defaultContactMaterial.contactEquationRelaxation = value;
+    },
+  },
+  solver: {
+    set tolerance(value) {
+      _world.solver.tolerance = value;
+    },
+    set iterations(value) {
+      _world.solver.iterations = value;
+    },
+  },
   add(id) {
     return _world.add(bodies[id]);
   },
@@ -43,11 +56,12 @@ export const world = {
   step(...args) {
     return _world.step(...args);
   },
-  getBodyById(id, withMatrix = false) {
-    return {
-      position: bodies[id].position,
-      quaternion: bodies[id].quaternion,
-      matrix: withMatrix ? computeMatrix(bodies[id]) : null,
-    };
+  getBodyById(id, matrix = false) {
+    return matrix
+      ? computeMatrix(bodies[id])
+      : {
+          position: bodies[id].position,
+          quaternion: bodies[id].quaternion,
+        };
   },
 };

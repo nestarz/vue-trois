@@ -3,9 +3,8 @@ import { h, shallowRef } from "vue";
 import * as THREE from "three";
 import niceColors from "nice-color-palettes";
 
-import useFrame from "vue-three-fiber/hooks/useFrame.js";
+//import useFrame from "vue-three-fiber/hooks/useFrame.js";
 import Mesh from "vue-three-fiber/components/Mesh.js";
-
 import { useBox } from "vue-cannon/hooks/useCannon.js";
 
 export default {
@@ -34,7 +33,7 @@ export default {
     );
 
     const geometry = new THREE.InstancedBufferGeometry()
-      .copy(new THREE.BoxBufferGeometry(0.1, 0.1, 0.1))
+      .copy(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2))
       .setAttribute("color", new THREE.InstancedBufferAttribute(colors, 3));
     const material = new THREE.MeshLambertMaterial({
       vertexColors: THREE.VertexColors,

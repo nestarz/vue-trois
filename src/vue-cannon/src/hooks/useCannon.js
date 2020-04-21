@@ -22,7 +22,7 @@ export const useSphere = (fn, fwdRef) => useBody("Sphere", fn, fwdRef);
 export const usePlane = (fn, fwdRef) => useBody("Plane", fn, fwdRef);
 
 export const useBody = (type, bodyFn, meshRef) => {
-  const { world, createBody } = inject(PhysicsContextSymbol);
+  const { world, createBody, computeMatrix } = inject(PhysicsContextSymbol);
   const uuid = computed(() => (meshRef.value ? meshRef.value.uuid : null));
 
   const bodies = shallowRef(null);
@@ -46,10 +46,15 @@ export const useBody = (type, bodyFn, meshRef) => {
     onInvalidate(() => bodies.value.forEach((body) => world.remove(body)));
   });
 
-  const getBody = async (i, ...args) =>
+  const getBodyMatrix = async (i) =>
+    bodies.value[i].id !== undefined
+      ? await computeMatrix(bodies.value[i])
+      : await world.getBodyById(bodies.value[i], true);
+
+  const getBody = async (i) =>
     bodies.value[i].id !== undefined
       ? bodies.value[i]
-      : await world.getBodyById(bodies.value[i], ...args);
+      : await world.getBodyById(bodies.value[i], false);
 
   const temp = new THREE.Matrix4();
   useFrame(async () => {
@@ -57,14 +62,14 @@ export const useBody = (type, bodyFn, meshRef) => {
 
     if (meshRef.value instanceof THREE.InstancedMesh) {
       for (let i = 0; i < meshRef.value.count; i++) {
-        const body = await getBody(i, true);
-        meshRef.value.setMatrixAt(i, temp.fromArray(body.matrix));
+        const matrix = await getBodyMatrix(i);
+        meshRef.value.setMatrixAt(i, temp.fromArray(matrix));
         meshRef.value.instanceMatrix.needsUpdate = true;
       }
     } else {
-      const body = await getBody(0);
-      meshRef.value.position.copy(body.position);
-      meshRef.value.quaternion.copy(body.quaternion);
+      const { position, quaternion } = await getBody(0);
+      meshRef.value.position.copy(position);
+      meshRef.value.quaternion.copy(quaternion);
     }
   });
 
