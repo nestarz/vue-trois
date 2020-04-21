@@ -16,13 +16,6 @@ const debug = false;
 const App = {
   setup() {
     const renderContextRef = ref({});
-    watch(renderContextRef, () => {
-      const { camera } = renderContextRef.value;
-
-      camera.position.set(0, 0.5, 4);
-      camera.lookAt(0, 0, 0);
-    });
-
     const physicsContextRef = ref({});
     watch([renderContextRef, physicsContextRef], () => {
       const { scene } = renderContextRef.value;
@@ -46,15 +39,16 @@ const App = {
     return () =>
       h(Renderer, { contextRef: renderContextRef, gl: { alpha: true } }, () =>
         h(Physics, { contextRef: physicsContextRef, useWorker: false }, () => [
+          h(Cubes, { number: 2 }),
           h(Box, { position: new THREE.Vector3(-1, 5, 0) }),
           h(Box, { position: new THREE.Vector3(1, 1, 0) }),
-          h(Cubes, { number: 2 }),
           h(Player, {
-            position: new THREE.Vector3(0, 1, 0),
+            position: new THREE.Vector3(0, 10, 0),
           }),
           h(Plane, {
             position: new THREE.Vector3(0, -2, 0),
             rotation: new THREE.Euler(-Math.PI / 2, 0, 0, "XYZ"),
+            scale: new THREE.Vector2(10, 10),
           }),
         ])
       );

@@ -4,11 +4,10 @@ import * as THREE from "three";
 import useFrame from "vue-three-fiber/hooks/useFrame.js";
 
 import { useMouse } from "game/hooks/useMouse.js";
+import { useControls } from "game/hooks/useControls.js";
 
-const preventGimbleLock = (phi) => {
-  const EPS = 0.000001;
-  return Math.max(EPS, Math.min(Math.PI - EPS, phi));
-};
+const preventGimbleLock = (phi, EPS = 1e-6) =>
+  Math.max(EPS, Math.min(Math.PI - EPS, phi));
 
 const Spherical = ({ radius = 1, phi = 0, theta = 0 } = {}) => ({
   get phi() {
@@ -59,9 +58,27 @@ export const useThirdPersonControl = ({
   max = 100,
 } = {}) => {
   const orbit = Orbit({ radius, phi, theta, min, max });
-  const { delta, wheel } = useMouse();
+  const { drag, delta, wheel } = useMouse();
   watch(delta, () => orbit.rotate(delta.value));
   watch(wheel, () => orbit.zoom(wheel.value * 0.01));
+
+  const controls = useControls();
+  const spherical = new THREE.Spherical();
+  const targetDirection = new THREE.Vector3();
+  watch(
+    [() => controls, drag, target],
+    (_, _2, invalidateCallback) => {
+      if (drag.value) return;
+      let id = requestAnimationFrame(function frame() {
+        target.value.getWorldDirection(targetDirection).multiplyScalar(-1);
+        spherical.setFromVector3(targetDirection);
+        orbit.sphere.theta = spherical.theta;
+        id = requestAnimationFrame(frame);
+      });
+      invalidateCallback(() => cancelAnimationFrame(id));
+    },
+    { deep: true }
+  );
 
   const direction = new THREE.Vector3();
   useFrame(() => {

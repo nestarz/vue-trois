@@ -1,12 +1,13 @@
-import { h, shallowRef, watch, inject } from "vue";
+import { h, shallowRef, inject } from "vue";
 
 import * as THREE from "three";
 
 import { CanvasContextSymbol } from "vue-three-fiber/components/Renderer.js";
 
 import Mesh from "vue-three-fiber/components/Mesh.js";
-import { useBox } from "vue-cannon/hooks/useCannon.js";
+import { useSphere } from "vue-cannon/hooks/useCannon.js";
 import { useControls } from "game/hooks/useControls.js";
+import { useMoveSystem } from "game/hooks/useMoveSystem.js";
 import { useThirdPersonControl } from "game/hooks/useThirdPersonControl.js";
 
 export default {
@@ -28,24 +29,19 @@ export default {
       max: 100,
     });
 
-    const bodies = useBox(() => ({ mass: 1, fixedRotation: true }), player);
+    const bodies = useSphere(() => ({ mass: 1, fixedRotation: true }), player);
     const direction = useControls();
-    const speed = 20;
-    watch(
-      () => direction,
-      () =>
-        bodies.value.forEach((body) => {
-          const { x, y, z } = direction;
-          body.velocity.set(x * speed, y * 2, -z * speed);
-          body.wakeUp();
-        }),
-      { deep: true }
-    );
+    useMoveSystem({
+      bodies,
+      direction,
+      speed: new THREE.Vector4(10, 10, 10, 0.1),
+    });
 
     return () =>
       h(Mesh, {
         meshRef: player,
         position: props.position,
+        geometry: new THREE.SphereGeometry(1, 10, 10),
       });
   },
 };

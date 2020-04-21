@@ -10,13 +10,13 @@ const computeMousePosUnit = ({ clientX, clientY, currentTarget }) =>
   );
 
 export const useMouse = () => {
-  const prevMousePosUnit = new THREE.Vector2();
   const delta = ref(new THREE.Vector2());
   const drag = ref(0);
   const wheel = ref(0);
   const x = ref(0);
   const y = ref(0);
 
+  const prevMousePosUnit = new THREE.Vector2();
   const on = {
     move: (event) => {
       const mousePosUnit = computeMousePosUnit(event);

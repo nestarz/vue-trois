@@ -2,14 +2,14 @@ import * as THREE from "/web_modules/three.js";
 import * as CANNON from "/web_modules/cannon-es.js";
 
 export const createBody = (
-  type = CANNON.Box,
+  type = "Box",
   { size, scale, position, quaternion, center },
   options = {}
 ) => {
   const box =
-    type === CANNON.Sphere
+    type === "Sphere"
       ? new CANNON.Sphere((Math.max(size[0], size[1]) * scale[0]) / 2)
-      : type === CANNON.Plane
+      : type === "Plane"
       ? new CANNON.Plane()
       : new CANNON.Box(new CANNON.Vec3().set(...size).scale(scale[0] / 2));
 
@@ -24,7 +24,7 @@ export const createBody = (
 
   body.sleepSpeedLimit = options.sleepSpeedLimit ?? 0.5;
   body.sleepTimeLimit = options.sleepSpeedLimit ?? 1;
-  
+
   body.addShape(
     box,
     new CANNON.Vec3(center[0], center[1] * scale[1], center[2])

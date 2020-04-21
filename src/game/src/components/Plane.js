@@ -11,6 +11,10 @@ export default {
       type: THREE.Vector3,
       required: true,
     },
+    scale: {
+      type: THREE.Vector2,
+      default: () => new THREE.Vector2(20, 20),
+    },
     rotation: {
       type: THREE.Euler,
       required: true,
@@ -21,7 +25,7 @@ export default {
 
     usePlane(() => ({ mass: 0 }), plane);
 
-    const geometry = new THREE.PlaneGeometry(20, 4);
+    const geometry = new THREE.PlaneGeometry(props.scale.x, props.scale.y);
     const material = new THREE.MeshNormalMaterial({
       side: THREE.DoubleSide,
     });
