@@ -16,7 +16,9 @@ export function createBody(...args) {
 
 export function setup(worldOptions) {
   _world = new CANNON.World({
-    gravity: worldOptions.gravity ?? new CANNON.Vec3(0, -10, 0),
+    gravity: new CANNON.Vec3().set(
+      ...(worldOptions.gravity ?? [0, -10, 0])
+    ),
     broadphase:
       worldOptions.broadphase === "NaiveBroadphase"
         ? new CANNON.NaiveBroadphase()

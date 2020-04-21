@@ -10,6 +10,8 @@ import Cubes from "game/components/Cubes.js";
 import Box from "game/components/Box.js";
 import Plane from "game/components/Plane.js";
 
+const debug = false;
+
 const App = {
   setup() {
     const renderContextRef = ref({});
@@ -33,7 +35,7 @@ const App = {
         world.defaultContactMaterial.contactEquationRelaxation = 5;
       }
 
-      if (world && !isWorker) {
+      if (world && !isWorker && debug) {
         const cannonDebugger = new CannonDebugger(scene, world);
         frameCallbacks.add(() => cannonDebugger.update());
       }
@@ -41,10 +43,10 @@ const App = {
 
     return () =>
       h(Renderer, { contextRef: renderContextRef, gl: { alpha: true } }, () =>
-        h(Physics, { contextRef: physicsContextRef }, () => [
-          h(Box, { position: new THREE.Vector3(-1, 1, 0) }),
+        h(Physics, { contextRef: physicsContextRef, useWorker: false }, () => [
+          h(Box, { position: new THREE.Vector3(-1, 5, 0) }),
           h(Box, { position: new THREE.Vector3(1, 1, 0) }),
-          h(Cubes, { number: 100 }),
+          h(Cubes, { number: 200 }),
           h(Plane, {
             position: new THREE.Vector3(0, -0, 0),
             rotation: new THREE.Euler(-Math.PI / 2, 0, 0, "XYZ"),

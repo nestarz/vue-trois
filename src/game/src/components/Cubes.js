@@ -3,7 +3,7 @@ import { h, shallowRef } from "vue";
 import * as THREE from "three";
 import niceColors from "nice-color-palettes";
 
-//import useFrame from "vue-three-fiber/hooks/useFrame.js";
+import useFrame from "vue-three-fiber/hooks/useFrame.js";
 import Mesh from "vue-three-fiber/components/Mesh.js";
 import { useBox } from "vue-cannon/hooks/useCannon.js";
 
@@ -15,6 +15,22 @@ export default {
     },
   },
   setup(props) {
+    const bodyConfigFn = () => ({
+      mass: 1,
+      position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
+    });
+
+    const cubesRef = shallowRef(null);
+    const bodies = useBox(bodyConfigFn, cubesRef);
+
+    useFrame(() => {
+      if (bodies.value && bodies.value.length) {
+        const body =
+          bodies.value[Math.floor(Math.random() * bodies.value.length)];
+        body.position.set(0, Math.random() * 2, 0);
+      }
+    });
+
     const colors = new Float32Array(props.number * 3);
     const color = new THREE.Color();
     for (let i = 0; i < props.number; i++)
@@ -22,19 +38,10 @@ export default {
         .set(niceColors[17][Math.floor(Math.random() * 5)])
         .convertSRGBToLinear()
         .toArray(colors, i * 3);
-
-    const cubesRef = shallowRef(null);
-    useBox(
-      () => ({
-        mass: 1,
-        position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
-      }),
-      cubesRef
-    );
-
     const geometry = new THREE.InstancedBufferGeometry()
-      .copy(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2))
+      .copy(new THREE.BoxBufferGeometry(0.1, 0.1, 0.1))
       .setAttribute("color", new THREE.InstancedBufferAttribute(colors, 3));
+      
     const material = new THREE.MeshLambertMaterial({
       vertexColors: THREE.VertexColors,
     });

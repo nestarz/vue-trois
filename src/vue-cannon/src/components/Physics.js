@@ -17,8 +17,8 @@ export default {
     worldOptions: {
       type: Object,
       default: () => ({
-        broadphase: new CANNON.NaiveBroadphase(),
-        gravity: new CANNON.Vec3(0, -9.82, 0),
+        broadphase: "SAPBroadphase",
+        gravity: [0, -10, 0],
         allowSleep: true,
       }),
     },
@@ -47,7 +47,16 @@ export default {
         console.warn("Worker Module not supported.");
       }
 
-      context.world = new CANNON.World(props.worldOptions);
+      context.world = new CANNON.World({
+        gravity: new CANNON.Vec3().set(
+          ...(props.worldOptions.gravity ?? [0, -10, 0])
+        ),
+        allowSleep: props.worldOptions.allowSleep ?? true,
+        broadphase:
+          props.worldOptions.broadphase === "NaiveBroadphase"
+            ? new CANNON.NaiveBroadphase()
+            : new CANNON.SAPBroadphase(),
+      });
       context.isWorker = false;
     }
 
