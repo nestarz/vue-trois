@@ -10,8 +10,9 @@ import Player from "game/components/Player.js";
 import Cubes from "game/components/Cubes.js";
 import Box from "game/components/Box.js";
 import Plane from "game/components/Plane.js";
+import PingPong from "game/components/PingPong.js";
 
-const debug = false;
+const debug = true;
 
 const App = {
   setup() {
@@ -45,6 +46,7 @@ const App = {
           h(Player, {
             position: new THREE.Vector3(0, 10, 0),
           }),
+          h(PingPong),
           h(Plane, {
             position: new THREE.Vector3(0, -2, 0),
             rotation: new THREE.Euler(-Math.PI / 2, 0, 0, "XYZ"),

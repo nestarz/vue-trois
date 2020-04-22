@@ -4,7 +4,7 @@ import { h, onMounted, provide, watchEffect, shallowReactive } from "vue";
 import cannonWorker, {
   checkSupport,
 } from "cannon-worker/hooks/useCannonWorker.js";
-import { createBody } from "vue-cannon/utils/computeBodyFromMesh.js";
+import { createBody } from "vue-cannon/utils/describeMesh.js";
 import { computeMatrix } from "vue-cannon/utils/computeMatrix.js";
 
 export const PhysicsContextSymbol = Symbol("PhysicsContextSymbol");

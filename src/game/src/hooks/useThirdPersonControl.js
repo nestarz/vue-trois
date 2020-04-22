@@ -66,9 +66,9 @@ export const useThirdPersonControl = ({
   const spherical = new THREE.Spherical();
   const targetDirection = new THREE.Vector3();
   watch(
-    [() => controls, drag, target],
+    [() => controls, drag],
     (_, _2, invalidateCallback) => {
-      if (drag.value) return;
+      if (drag.value || (!controls.x && !controls.z)) return;
       let id = requestAnimationFrame(function frame() {
         target.value.getWorldDirection(targetDirection).multiplyScalar(-1);
         spherical.setFromVector3(targetDirection);

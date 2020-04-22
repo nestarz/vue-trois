@@ -7,6 +7,7 @@
     "nice-color-palettes": "./nice-color-palettes.js",
     "nurbs": "./nurbs.js",
     "three": "./three.js",
+    "three/examples/jsm/loaders/GLTFLoader.js": "./three/examples/jsm/loaders/GLTFLoader.js",
     "vue": "./vue.js"
   }
 }

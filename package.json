@@ -25,6 +25,7 @@
       "construct-style-sheets-polyfill",
       "import-from-worker",
       "three",
+      "three/examples/jsm/loaders/GLTFLoader.js",
       "nurbs",
       "cannon-es",
       "vue",

@@ -8,7 +8,7 @@ import {
   shallowRef,
 } from "vue";
 
-import { describeMesh } from "vue-cannon/utils/computeBodyFromMesh.js";
+import { describeMesh } from "vue-cannon/utils/describeMesh.js";
 import { PhysicsContextSymbol } from "vue-cannon/components/Physics.js";
 
 export const useFrame = (callback) => {
@@ -36,8 +36,8 @@ export const useBody = (type, bodyFn, meshRef) => {
           const desc = describeMesh(meshRef.value);
           return await createBody(type, desc, bodyFn(i));
         })
-      );
-    } else {
+        );
+      } else {
       const desc = describeMesh(meshRef.value);
       bodies.value = [await createBody(type, desc, bodyFn(0))];
     }
