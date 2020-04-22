@@ -1,4 +1,4 @@
-# Vue Trois Template
+# Vue Trois
 
 - [x] vue-three-fiber
 - [x] vue-cannon
