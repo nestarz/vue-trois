@@ -1,7 +1,7 @@
-import * as CANNON from "/web_modules/cannon-es.js";
+import * as CANNON from "cannon-ess";
 
-import { createBody as _createBody } from "/src/vue-cannon/src/utils/describeMesh.js";
-import { computeMatrix } from "/src/vue-cannon/src/utils/computeMatrix.js";
+import { createBody as _createBody } from "vue-cannon/src/utils/describeMesh.js";
+import { computeMatrix } from "vue-cannon/src/utils/computeMatrix.js";
 
 const bodies = {};
 let _world = null;

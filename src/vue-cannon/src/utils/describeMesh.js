@@ -1,5 +1,5 @@
-import * as THREE from "/web_modules/three.js";
-import * as CANNON from "/web_modules/cannon-es.js";
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
 
 const convert = (value) =>
   Array.isArray(value)

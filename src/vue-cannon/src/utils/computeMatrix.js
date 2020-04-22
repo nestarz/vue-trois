@@ -1,4 +1,4 @@
-import * as THREE from "/web_modules/three.js";
+import * as THREE from "three";
 const temp = new THREE.Object3D();
 
 export const computeMatrix = ({ position, quaternion }) => {
