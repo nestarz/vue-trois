@@ -56,6 +56,7 @@ const Paddle = {
     const model = ref();
     const bodyConfig = {
       type: "Kinematic",
+      mass: 0,
       position: [1.7, 50, 50],
       args: [10, 1, 13.5],
       onCollide: (e) => pong(e.contact.impactVelocity),

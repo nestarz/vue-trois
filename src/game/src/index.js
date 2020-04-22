@@ -12,7 +12,7 @@ import Box from "game/components/Box.js";
 import Plane from "game/components/Plane.js";
 import PingPong from "game/components/PingPong.js";
 
-const debug = true;
+const debug = false;
 
 const App = {
   setup() {
