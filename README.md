@@ -1,4 +1,4 @@
-# Vue Game Template
+# Vue 3D Template
 
 - [x] vue-three
 - [x] vue-cannon
