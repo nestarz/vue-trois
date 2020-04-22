@@ -1,6 +1,6 @@
-# Vue 3D Template
+# Vue Trois Template
 
-- [x] vue-three
+- [x] vue-three-fiber
 - [x] vue-cannon
 - [x] cannon-worker
 - [x] game
