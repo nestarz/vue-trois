@@ -7,20 +7,16 @@ import Object3D from "vue-three-fiber/components/Object3D.js";
 import { useLoader } from "vue-three-fiber/hooks/useLoader.js";
 import { useMouse } from "game/hooks/useMouse.js";
 
-import {
-  useSphere,
-  useBox,
-  usePlane,
-  useFrame,
-} from "vue-cannon/hooks/useCannon.js";
+import { useSphere, useBox, usePlane } from "vue-cannon/hooks/useCannon.js";
 
 import { lerp, clamp } from "game/utils/math.js";
 
-const pingSound = "/src/game/assets/pingpong/sounds/ping.mp3";
-const earthImg = "/src/game/assets/pingpong/textures/cross.jpg";
-const pingpongGlb = "/src/game/assets/pingpong/models/pingpong.glb";
+const pingSound = location.href + "src/game/assets/pingpong/sounds/ping.mp3";
+const earthImg = location.href + "src/game/assets/pingpong/textures/cross.jpg";
+const pingpongGlb =
+  location.href + "src/game/assets/pingpong/models/pingpong.glb";
 
-const ping = new Audio(pingSound);
+const ping = new Audio();
 const store = reactive({
   count: 0,
   welcome: true,
@@ -74,7 +70,7 @@ const Paddle = {
 
       values.x = lerp(values.x, (x * Math.PI) / 5, 0.2);
       values.y = lerp(values.y, (x * Math.PI) / 5, 0.2);
-      body.position.set(x * 10, 10 -y * 5, 0);
+      body.position.set(x * 10, 10 - y * 5, 0);
       // body.rotation.set(0, 0, values.y);
       model.value.rotation.x = lerp(
         model.value.rotation.x,
