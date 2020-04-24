@@ -29,6 +29,7 @@
       "nurbs",
       "cannon-es",
       "vue",
+      "vue/dist/vue.esm-browser.js",
       "nice-color-palettes"
     ]
   }

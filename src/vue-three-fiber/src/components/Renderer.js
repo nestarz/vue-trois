@@ -1,4 +1,12 @@
-import { h, shallowRef, onMounted, provide, onUnmounted, watchEffect, shallowReadonly } from "vue";
+import {
+  h,
+  shallowRef,
+  onMounted,
+  provide,
+  onUnmounted,
+  watchEffect,
+  shallowReadonly,
+} from "vue";
 import * as THREE from "three";
 
 import useFrame from "vue-three-fiber/hooks/useFrame.js";
@@ -49,7 +57,9 @@ export default {
     });
 
     provide(CanvasContextSymbol, context);
-    watchEffect(() => (props.contextRef.value = context));
+    watchEffect(() => {
+      if (props.contextRef) props.contextRef.value = context;
+    });
 
     const mouse = useMouse(containerRef);
     useFrame(() => context.raycaster.setFromCamera(mouse, context.camera));

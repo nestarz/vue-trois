@@ -1,4 +1,4 @@
-import * as CANNON from "cannon-ess";
+import * as CANNON from "../../../../web_modules/cannon-es.js";
 
 import { createBody as _createBody } from "vue-cannon/src/utils/describeMesh.js";
 import { computeMatrix } from "vue-cannon/src/utils/computeMatrix.js";
