@@ -88,5 +88,5 @@ const App = {
 };
 
 createApp(App).mount("#app");
-<script>
+</script>
 ```
