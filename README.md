@@ -45,38 +45,48 @@ const Ball = {
 
 Wrap it in a scene
 
-```js
+```html
+<div id="app">
+  <renderer v-bind="renderer">
+    <physics v-bind="physics">
+      <ball v-for="ball in balls" v-bind="ball"></ball>
+    </physics>
+  </renderer>
+<div>
+
+<script>
+import { createApp } from "vue";
 import * as THREE from "three";
-import { createApp, h, ref, watch } from "vue";
 
 import Renderer from "vue-three-fiber/components/Renderer.js";
 import Physics from "vue-cannon/components/Physics.js";
-import Box from "game/components/Box.js";
+import Ball from "game/components/Ball.js";
 
 const App = {
+  components: { Physics, Renderer, Ball },
   setup() {
-    const physicsContextRef = ref({});
-    watch(physicsContextRef, () => {
-      const { world } = physicsContextRef.value;
-
-      if (world) {
-        world.solver.tolerance = 0.001;
-        world.solver.iterations = 5;
-        world.broadphase.axisIndex = 0;
-        world.defaultContactMaterial.contactEquationStiffness = 1e6;
-        world.defaultContactMaterial.contactEquationRelaxation = 5;
-        world.defaultContactMaterial.contactEquationRegularizationTime = 3;
-      }
-    });
-
-    return () =>
-      h(Renderer, { contextRef: renderContextRef, gl: { alpha: true } }, () =>
-        h(Physics, { contextRef: physicsContextRef, useWorker: false }, () => [
-          h(Ball),
-        ])
-      );
+    return {
+      renderer: {
+        gl: { alpha: true },
+      },
+      physics: {
+        tolerance: 0.001,
+        iterations: 5,
+        axisIndex: 0,
+        defaultContactMaterial: {
+          contactEquationStiffness: 1e6,
+          contactEquationRelaxation: 5,
+          contactEquationRegularizationTime: 3,
+        },
+      },
+      balls: [
+        { position: new THREE.Vector3(-1, 5, 0) },
+        { position: new THREE.Vector3(1, 5, 0) },
+      ],
+    };
   },
 };
 
 createApp(App).mount("#app");
+<script>
 ```
