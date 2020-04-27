@@ -51,6 +51,7 @@ const Orbit = ({
 export const useThirdPersonControl = ({
   camera,
   target,
+  controls,
   radius = 10,
   phi = Math.PI / 2,
   theta = Math.PI / 3,
@@ -62,13 +63,13 @@ export const useThirdPersonControl = ({
   watch(delta, () => orbit.rotate(delta.value));
   watch(wheel, () => orbit.zoom(wheel.value * 0.01));
 
-  const controls = useControls();
+  // const controls = useControls();
   const spherical = new THREE.Spherical();
   const targetDirection = new THREE.Vector3();
   watch(
     [() => controls, drag],
     (_, _2, invalidateCallback) => {
-      if (drag.value || (!controls.x && !controls.z)) return;
+      if (drag.value || !controls || (!controls.x && !controls.z)) return;
       let id = requestAnimationFrame(function frame() {
         target.value.getWorldDirection(targetDirection).multiplyScalar(-1);
         spherical.setFromVector3(targetDirection);
@@ -84,8 +85,13 @@ export const useThirdPersonControl = ({
   useFrame(() => {
     camera.getWorldDirection(direction);
     direction.multiplyScalar(-1);
-    const position = orbit.toCartesianCoordinates().add(target.value.position);
-    camera.position.copy(position);
-    camera.lookAt(target.value.position);
+
+    const position = orbit.toCartesianCoordinates();
+    if (!target.value) {
+      camera.position.copy(position);
+    } else {
+      camera.position.copy(position.add(target.value.position));
+      camera.lookAt(target.value.position);
+    }
   });
 };

@@ -26,12 +26,10 @@ export default {
       props.position.z + Math.random() - 0.5,
     ];
 
-    const bodyConfigFn = () => ({
+    const [cubesRef, bodies] = useBox(() => ({
       mass: 1,
       position: newPos(),
-    });
-    const cubesRef = shallowRef(null);
-    const bodies = useBox(bodyConfigFn, cubesRef);
+    }));
 
     let t = Date.now();
     useFrame(() => {

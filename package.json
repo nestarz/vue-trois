@@ -26,6 +26,7 @@
       "import-from-worker",
       "three",
       "three/examples/jsm/loaders/GLTFLoader.js",
+      "three/examples/jsm/loaders/STLLoader.js",
       "nurbs",
       "cannon-es",
       "vue",

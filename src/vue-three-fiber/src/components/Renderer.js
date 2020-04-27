@@ -4,8 +4,10 @@ import {
   onMounted,
   provide,
   onUnmounted,
+  onBeforeUnmount,
   watchEffect,
   shallowReadonly,
+  unref,
 } from "vue";
 import * as THREE from "three";
 
@@ -16,26 +18,32 @@ export const CanvasContextSymbol = Symbol();
 export const useMouse = (containerRef) => {
   const mouse = new THREE.Vector2();
   function onMouseMove(event) {
-    const { width, height } = containerRef.value.getBoundingClientRect();
+    const { width, height } = unref(containerRef).getBoundingClientRect();
     mouse.x = (event.clientX / width) * 2 - 1;
     mouse.y = -(event.clientY / height) * 2 + 1;
   }
   onMounted(() =>
-    containerRef.value.addEventListener("mousemove", onMouseMove, false)
+    unref(containerRef).addEventListener("mousemove", onMouseMove, false)
   );
-  onUnmounted(() =>
-    containerRef.value.removeEventListener("mousemove", onMouseMove, false)
+  onUnmounted(
+    () =>
+      unref(containerRef) &&
+      unref(containerRef).removeEventListener("mousemove", onMouseMove, false)
   );
   return mouse;
 };
 
 export const useResize = (callback, parentRef) => {
+  const resizeObserver = ResizeObserver ? new ResizeObserver(callback) : null;
   onMounted(() => {
-    if (window.ResizeObserver && parentRef.value)
-      new window.ResizeObserver(callback).observe(parentRef.value);
+    if (resizeObserver && parentRef.value)
+      resizeObserver.observe(parentRef.value);
     else window.addEventListener("resize", callback);
   });
-  onUnmounted(() => window.removeEventListener("resize", callback));
+  onBeforeUnmount(() => {
+    if (resizeObserver && parentRef.value) resizeObserver.disconnect();
+    else window.removeEventListener("resize", callback);
+  });
 };
 
 export default {
@@ -71,27 +79,29 @@ export default {
       context.camera.updateProjectionMatrix();
     }, containerRef);
 
+    let id;
     onMounted(() => {
       containerRef.value.appendChild(context.renderer.domElement);
       context.renderer.setPixelRatio(window.devicePixelRatio);
 
-      function animate() {
+      function animate(t) {
         if (!context.renderer.domElement.parentNode) {
           return;
         }
 
         if (context.scene && context.camera) {
-          context.updateCallbacks.forEach((callback) => callback());
+          context.updateCallbacks.forEach((callback) => callback(t));
           context.renderer.render(context.scene, context.camera);
         }
 
-        requestAnimationFrame(animate);
+        id = requestAnimationFrame(animate);
       }
 
       animate();
     });
 
-    onUnmounted(() => context.renderer.dispose());
+    onBeforeUnmount(() => cancelAnimationFrame(id));
+    onBeforeUnmount(() => context.renderer.dispose());
 
     return () =>
       h(

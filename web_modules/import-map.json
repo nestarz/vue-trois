@@ -8,6 +8,7 @@
     "nurbs": "./nurbs.js",
     "three": "./three.js",
     "three/examples/jsm/loaders/GLTFLoader.js": "./three/examples/jsm/loaders/GLTFLoader.js",
+    "three/examples/jsm/loaders/STLLoader.js": "./three/examples/jsm/loaders/STLLoader.js",
     "vue": "./vue/dist/vue.esm-browser.js"
   }
 }

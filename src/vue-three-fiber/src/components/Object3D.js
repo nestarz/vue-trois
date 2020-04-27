@@ -7,6 +7,7 @@ import {
   watch,
   shallowRef,
   computed,
+  toRaw
 } from "vue";
 
 import { CanvasContextSymbol } from "vue-three-fiber/components/Renderer.js";
@@ -14,7 +15,6 @@ import { CanvasContextSymbol } from "vue-three-fiber/components/Renderer.js";
 export default {
   props: {
     value: THREE.Object3D,
-    objectRef: Object,
   },
   setup(props) {
     const { scene } = inject(CanvasContextSymbol);
@@ -30,16 +30,10 @@ export default {
     };
 
     watchEffect(() => {
-      if (props.objectRef) {
-        props.objectRef.value = object.value;
-      }
-    });
-
-    watchEffect(() => {
       if (object.value) {
         remove();
       }
-      scene.add(object.value);
+      scene.add(toRaw(object.value));
     });
     onUnmounted(() => remove());
 

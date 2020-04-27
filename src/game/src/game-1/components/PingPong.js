@@ -49,7 +49,6 @@ const Paddle = {
       count,
     } = store;
 
-    const model = ref();
     const bodyConfig = {
       type: "Kinematic",
       mass: 0,
@@ -57,11 +56,11 @@ const Paddle = {
       args: [10, 1, 13.5],
       onCollide: (e) => pong(e.contact.impactVelocity),
     };
-    const bodies = useBox(() => bodyConfig, model);
+    const [model, bodies] = useBox(() => bodyConfig);
     const mouse = useMouse();
     const values = { x: 0, y: 0 };
     watch([mouse.x, mouse.y], () => {
-      if (!bodies.value) return;
+      if (!bodies.value.length) return;
       const body = bodies.value[0];
       const {
         x: { value: x },
@@ -129,11 +128,11 @@ const Paddle = {
 
 const Ball = {
   setup() {
-    const ball = shallowRef();
-    useSphere(() => ({ mass: 1, position: [0, 5, 0] }), ball);
+    const [ball] = useSphere(() => ({ mass: 1, position: [0, 5, 0] }));
 
     const { results: map } = useLoader(THREE.TextureLoader, earthImg);
-    watch(map, () => {
+    watch([map, ball], () => {
+      if (!ball.value) return;
       if (ball.value.material.map) ball.value.material.map.dispose();
       // ball.value.material.map = map.value; // TODO: Fix issue
       ball.value.material.needsUpdate = true;

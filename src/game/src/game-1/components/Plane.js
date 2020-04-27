@@ -21,9 +21,7 @@ export default {
     },
   },
   setup(props) {
-    const plane = shallowRef(null);
-
-    usePlane(() => ({ mass: 0 }), plane);
+    const [plane] = usePlane(() => ({ mass: 0 }));
 
     const geometry = new THREE.PlaneGeometry(props.scale.x, props.scale.y);
     const material = new THREE.MeshNormalMaterial({

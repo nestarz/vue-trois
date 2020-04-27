@@ -21,13 +21,13 @@ export const useBox = (fn, fwdRef) => useBody("Box", fn, fwdRef);
 export const useSphere = (fn, fwdRef) => useBody("Sphere", fn, fwdRef);
 export const usePlane = (fn, fwdRef) => useBody("Plane", fn, fwdRef);
 
-export const useBody = (type, bodyFn, meshRef) => {
+export const useBody = (type, bodyFn, meshRef = shallowRef()) => {
   const { world, createBody, computeMatrix, isWorker } = inject(
     PhysicsContextSymbol
   );
 
   const uuid = computed(() => (meshRef.value ? meshRef.value.uuid : null));
-  const bodies = shallowRef(null);
+  const bodies = shallowRef([]);
   watch(uuid, async () => {
     if (meshRef.value instanceof THREE.InstancedMesh) {
       meshRef.value.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -75,5 +75,5 @@ export const useBody = (type, bodyFn, meshRef) => {
     }
   });
 
-  return bodies;
+  return [meshRef, bodies];
 };

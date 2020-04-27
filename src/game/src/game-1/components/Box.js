@@ -15,10 +15,8 @@ export default {
     },
   },
   setup(props) {
-    const boxRef = shallowRef(null);
-
     useFrame(() => (boxRef.value.rotation.x = boxRef.value.rotation.y += 0.01));
-    useBox(() => ({ mass: 1 }), boxRef);
+    const [boxRef] = useBox(() => ({ mass: 1 }));
 
     const hovered = ref(false);
     const active = ref(false);

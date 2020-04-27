@@ -18,7 +18,11 @@ export default {
     },
   },
   setup(props) {
-    const player = shallowRef(null);
+    const [player, bodies] = useSphere(() => ({
+      mass: 1,
+      fixedRotation: true,
+    }));
+    
     useThirdPersonControl({
       camera: inject(CanvasContextSymbol).camera,
       target: player,
@@ -29,7 +33,6 @@ export default {
       max: 100,
     });
 
-    const bodies = useSphere(() => ({ mass: 1, fixedRotation: true }), player);
     const direction = useControls();
     useMoveSystem({
       bodies,
