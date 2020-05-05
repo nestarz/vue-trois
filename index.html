@@ -7,33 +7,12 @@
   </head>
   <body>
     <div id="app"></div>
-    <script defer src="./web_modules/es-module-shims.js"></script>
-    <script defer type="module-shim">
-      const vueCompile = (string) => {
-        const script = /<script[^>]*>([^<]+)<\/script>/g.exec(string);
-        const template = /<template[^>]*>([^9998199]+)<\/template>/gi.exec(string);
-        return script[1].replace(
-          "export default {",
-          `export default { template: \`${template[1]}\`,`
-        );
-      };
-      
-      importShim.fetch = async function (url) {
-        const response = await fetch(url);
-        if (response.url.endsWith(".vue")) {
-          const source = await response.text();
-          const transformed = vueCompile(source);
-          return new Response(
-            new Blob([transformed], { type: "application/javascript" })
-          );
-        }
-        return response;
-      };
-    </script>
     <script
       defer
       src="./web_modules/construct-style-sheets-polyfill.js"
     ></script>
+    <script defer src="./web_modules/es-module-shims.js"></script>
+    <script defer type="module" src="./src/vue-compiler/index.js"></script>
     <script type="importmap-shim" src="./web_modules/import-map.json"></script>
     <script type="importmap-shim" src="./src/game/src/import-map.json"></script>
     <script
