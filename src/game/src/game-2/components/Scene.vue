@@ -29,7 +29,7 @@ export default {
     },
   },
   setup(props) {
-    const model = "/src/game/assets/models/amelie.stl";
+    const model = "/vue-trois/src/game/assets/models/amelie.stl";
     const { results: geometry } = useLoader(STLLoader, model);
     const position = computed(() => new THREE.Vector3(...props.position));
 
